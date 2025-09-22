@@ -1,0 +1,307 @@
+//This program is designed to give students experience with 2-dimensional arrays by having them process a Sudoku
+//puzzle board. In general, a Sudoku puzzle has the numbers 1 through 9 in any given row, column, or 3 x 3 ‘box’.
+//Numbers may not be duplicated in any row, column or 3 x 3 box. The board comes in with either one, two, or three
+//missing cells (designated by a zero). If there's a zero cell, we look at everything ELSE in that row, figure out what
+//the missing value(s) is(are), and then display what we fixed: (row,column,value). If it's a single missing value, then
+//you have three ways to figure out what it must be -- you can look at the other 8 values in the same row (the easiest
+//way), the other 8 values in the same column, or (if you want to do it a little harder) the same 3-x-3 box. This is the
+//"Type 1" problem. If it's two missing values, then they'll be adjacent in the same row or the same column (per the
+//assignment; not because it is otherwise necessary). If they're in the same row, then you HAVE to look at the two
+//columns involved; likewise, if they're in the same column, then you HAVE to look at the two rows. This is will be
+//called a Type 2 problem, but it is essentially two Type 1 problems, but you have to figure out whether they're row
+//or column problems, and then the same solution takes care of both. If it's THREE missing values (Type 3), then
+//they'll be adjacent in an "L" formation. Two are guaranteed to be in the same row, and two are guaranteed to be in
+//the same column. We will make sure that the "L" spans the boundary of a 3-x-3 box, so that you can solve for the
+//"loner" by looking at the 3x3 box, and then you are left with a Type 2 problem. 
+
+import java.util.Scanner;
+
+public class Sudoku
+{
+	// boolean flag is inserted to tell the program when to stop the do/while loop.
+	
+	public static boolean flag;
+	static int zeroes = 0;
+	static Scanner input = new Scanner(System.in);
+	public static void main(String[] args)
+	{
+		// Initialize sudokuGrid array and layout path through the methods
+		// by using a do/while loop to be able to analyze multiple arrays at once.
+		
+		int[][] sudokuGrid = new int[9][9];
+		
+			do
+			{
+				getValues(sudokuGrid);
+			}
+			while (zeroes < 81);
+			
+			System.out.println("END");	
+		}
+	
+	// getValues insert the numbers from the console to the sudokuGrid array.
+	
+	public static void getValues(int[][] sudokuGrid)
+	{
+		
+		// Populate the sudokuGrid array with row and column.
+		
+		for (int row = 0; row < sudokuGrid.length; row++) 
+		{
+			for (int column = 0; column < sudokuGrid[row].length; column++) 
+			{
+				sudokuGrid[row][column] = input.nextInt();
+			}
+		}
+		detectZeroes(sudokuGrid);
+	}
+	
+	// By using reading the sudokuGrid array, detectZeros will determine how many
+	// total zeros are in the matrix, and apply them to the numOfZeroes variable.
+	
+	public static void detectZeroes(int[][] sudokuGrid)
+	{
+		int numOfZeroes = 0;
+		
+		for (int row = 0; row < sudokuGrid.length; row++) 
+		{
+			for (int column = 0; column < sudokuGrid[row].length; column++) 
+			{
+				if (sudokuGrid[row][column] == 0)
+				{
+					numOfZeroes = numOfZeroes + 1;
+				}
+			}
+		}
+		
+		// After the nested for loop, the program sends the variable numOfZeroes and the 
+		// sudokuGrid to the method problemPicker.
+		
+		System.out.println("");
+		problemPicker(sudokuGrid, numOfZeroes);
+	}
+	
+	// By using the number of zeros, problemPicker will determine what type of problem that
+	// will determine the solution of the sudokuGrid.
+	
+	public static void problemPicker(int[][] sudokuGrid, int numOfZeroes)
+	{
+		
+		if (numOfZeroes == 1)
+		{
+			oneZero(sudokuGrid);
+			
+		}
+		else if (numOfZeroes == 2)
+		{
+			twoZero(sudokuGrid);
+			
+		}
+		else if (numOfZeroes == 3)
+		{
+			threeZero(sudokuGrid);
+			
+		}
+		else
+		{
+			System.out.println("END");
+		}
+	}
+	
+	// oneZero will be selected from problemPicker if only one zero in the sudokuGrid array.
+	
+	public static void oneZero(int[][] sudokuGrid)
+	{
+		int sum = 0;
+		int locatedRow = 0;
+		int locatedColumn = 0;
+		int missingNumber = 0;
+		
+		// The oneZero method's nested for loop scans the sudokuGrid array by row and column
+		//  to calculate the exact placement of the zero.
+		
+		for (int row = 0; row < sudokuGrid.length; row++) 
+		{
+			for (int column = 0; column < sudokuGrid[row].length; column++) 
+			{
+				if(sudokuGrid[row][column] == 0)
+				{
+					locatedRow = row;
+					locatedColumn = column;
+				}
+			}
+		}
+		
+		// The oneZero method then takes the locatedColumn and the Row to find the sum.
+		// By using the sum, the number is subtracted from 45 (the total of the whole column)
+		// to determine the missing number in the sudokuGrid array.
+		
+		for(int row = 0; row < sudokuGrid.length; row++)
+		{
+			sum = sum + sudokuGrid[row][locatedColumn];
+		}
+		missingNumber = 45 - sum;
+		System.out.print("(" + locatedRow + "," + locatedColumn + "," + missingNumber + ") ");
+	}
+	
+	// twoZero will be selected from problemPicker if there are only two zero in the
+	// sudokuGrid array.
+	
+	public static void twoZero(int[][] sudokuGrid)
+	{
+		int locatedRow = 0;
+		int locatedColumn = 0;
+		
+		// The oneZero method's nested for loop scans the sudokuGrid array by row and column
+		// to calculate the exact placement of the zeroes. solveRow will be called if the zeroes
+		// lie in the same row. solveColumn will be called if the zeroes lie in the same column.
+		
+		for (int row = 0; row < sudokuGrid[0].length ;row++) 
+		{
+			for (int column = 0; column < sudokuGrid[0].length; column++) 
+			{
+				if(sudokuGrid[row][column] == 0)
+				{
+					if(sudokuGrid[row][column + 1] == 0)	
+					{ 
+						solveRow(sudokuGrid, row, column);
+					}
+					else if(sudokuGrid[row + 1][column] == 0)
+					{											
+						locatedColumn = column;
+						solveColumn(sudokuGrid, row, locatedColumn);
+					}
+				}
+			}
+		}
+	}
+	
+	// The solveRow method calculates the sum of the column of each zero through a nested
+	// for loop. The zeroes lie in the same row so the column must be calculate to determine
+	// each missing number.
+	
+	public static void solveRow(int[][] sudokuGrid, int row, int column)
+	{
+		int result[] = new int [2];
+		
+		for(int x = 0 ; x < 2 ; x++)
+		{	
+			int sum = 0;
+			for(int y = 0 ; y < sudokuGrid[0].length ; y++)
+			{
+				sum = sum + sudokuGrid[y][column + x];
+				
+			}
+			result[x] = 45 - sum;
+			System.out.print("(" + row + "," + (column + x) + "," + result[x] + ") ");
+		}
+	}
+	
+	// The solveColumn method calculates the sum of the row of each zero through a nested
+	// for loop. The zeroes lie in the same column so the row must be calculate to determine
+	// each missing number.
+	
+	public static void solveColumn(int[][] sudokuGrid, int row, int locatedColumn)
+	{
+		
+		int result[] = new int [2];
+		
+		for(int x = 0 ; x < 2 ; x++)
+		{
+			int sum = 0;
+			for(int y = 0 ; y < sudokuGrid[0].length; y++)
+			{
+				sum = sum + sudokuGrid[row + x][y];
+			}
+			result[x] = 45 - sum;
+			System.out.print("(" + (row + x) + "," + locatedColumn + "," + result[x] + ") ");
+		}
+	}
+	
+	// threeZero will be selected from problemPicker if there are three zeroes in the sudokuGrid
+	// array. Three zeros are missing but the zeros are in a L shape (Two in same row and two in 
+	// same column) By using a nested for loop to scan through the sudokuGrid array and if/else
+	// statements to determine which block the third zero is located in.
+	
+		public static void threeZero(int[][] sudokuGrid)
+		{
+			int locatedRow = 0;
+			int locatedColumn = 0;
+			int[] threeZeros = new int[3];
+			int zeroIndex = 0;
+			
+			for (int r = 0; r < 9; r++)
+			{
+				for (int c = 0; c < 9; c++)
+				{
+					if (sudokuGrid[r][c] == 0)
+					{
+						// This math equation (whichBox = (r/3) * 3 + (c/3)), splits the
+						// sudokuGrid array into 3x3 blocks.
+						
+						int whichBox = (r/3) * 3 + (c/3);
+						threeZeros[zeroIndex] = whichBox;
+						zeroIndex++;
+					}
+				}
+			}
+			
+			int blockA = threeZeros[0];
+			int blockB = threeZeros[1];
+			int blockC = threeZeros[2];
+			
+			if (blockA == blockB)
+			{
+				 solveBlock(sudokuGrid, blockC);
+			}
+			else
+			{
+				if (blockA == blockC)
+				{
+					solveBlock(sudokuGrid, blockB);
+				}
+				else
+				{
+					solveBlock(sudokuGrid, blockA);
+				}
+			}
+			
+			// Sends the information of the two zeros that are next to each other to be solved
+			// in the twoZero method and the missing numbers of each being returned.
+			
+			twoZero(sudokuGrid);
+		}
+		
+		// The third zero's information is sent to the solveBlock method. Then the sudokuGrid
+		// array is scanned through by a nested for loop to determine its row (zeroRow) and 
+		// column (zeroCol). The missing number is determined using these variables to find the
+		// sum and then subtracting from 45 (the total of the whole column) to determine the
+		// missing number in the sudokuGrid array.
+		
+		public static void solveBlock(int[][] sudokuGrid, int block)
+		{
+			int sum = 0;
+			int row = (block / 3) * 3;
+			int col = (block % 3) * 3;
+			int zeroRow = 0;
+			int zeroCol = 0;
+			
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					sum += sudokuGrid[row + i][col + j];
+					
+					if (sudokuGrid[row + i][col + j] == 0)
+					{
+						zeroRow = row + i;
+						zeroCol = col + j;
+					}
+				}
+			}
+			
+			int missingNumber = 45 - sum;
+			sudokuGrid[zeroRow][zeroCol] = missingNumber;
+			System.out.print("(" + zeroRow + "," + zeroCol + "," + missingNumber + ") ");
+		}
+}
